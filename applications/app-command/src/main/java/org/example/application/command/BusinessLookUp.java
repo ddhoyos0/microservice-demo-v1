@@ -2,6 +2,7 @@ package org.example.application.command;
 
 
 import org.example.domain.events.AccountCreated;
+import org.example.domain.events.DirectoryCreated;
 import org.example.generic.DelegateService;
 import org.example.generic.domain.DomainEvent;
 import org.springframework.context.ApplicationContext;
@@ -19,6 +20,12 @@ public class BusinessLookUp {
     public BusinessLookUp(ApplicationContext context) {
         business.put("org.example.AccountCreated", Flux.just( input -> {
             var event = (AccountCreated)input;
+            System.out.println(event);
+            return Mono.empty();
+        }));
+
+        business.put("org.example.DirectoryCreated", Flux.just( input -> {
+            var event = (DirectoryCreated) input;
             System.out.println(event);
             return Mono.empty();
         }));

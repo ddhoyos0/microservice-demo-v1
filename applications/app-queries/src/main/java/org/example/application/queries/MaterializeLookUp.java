@@ -2,8 +2,12 @@ package org.example.application.queries;
 
 import org.example.application.queries.adapter.repo.AccountModeView;
 import org.example.application.queries.adapter.repo.AccountRepository;
+import org.example.application.queries.adapter.repo.DirectoryModelView;
+import org.example.application.queries.adapter.repo.DirectoryRepository;
 import org.example.application.queries.adapter.repo.TransactionModelView;
+import org.example.application.queries.factory.DirectoryFactory;
 import org.example.domain.events.AccountCreated;
+import org.example.domain.events.DirectoryCreated;
 import org.example.domain.events.TransactionAdded;
 import org.example.generic.DelegateService;
 import org.springframework.context.ApplicationContext;
@@ -18,10 +22,9 @@ import java.util.function.Function;
 @Component
 public class MaterializeLookUp {
     private final Map<String, Flux<DelegateService>> business = new HashMap<>();
-    private final AccountRepository repository;
 
-    public MaterializeLookUp(ApplicationContext context, AccountRepository repository) {
-        this.repository = repository;
+    public MaterializeLookUp(ApplicationContext context, AccountRepository repository,  DirectoryRepository directoryRepository) {
+
         business.put("org.example.AccountCreated", Flux.just( input -> {
             var event = (AccountCreated)input;
             var document = new AccountModeView();
@@ -45,6 +48,11 @@ public class MaterializeLookUp {
 
                 return repository.save(doc).then();
             });
+        }));
+
+        business.put("org.example.DirectoryCreated", Flux.just( input -> {
+            var event = (DirectoryCreated)input;
+            return directoryRepository.save(DirectoryFactory.modelView(event)).then();
         }));
     }
 

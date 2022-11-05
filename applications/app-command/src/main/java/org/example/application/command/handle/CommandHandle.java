@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.example.business.AddTransactionUseCase;
 import org.example.business.CreateAccountUseCase;
+import org.example.business.CreateDirectoryUseCase;
 import org.example.domain.command.AddTransactionUseCommand;
 import org.example.domain.command.CreateAccountCommand;
+import org.example.domain.command.CreateDirectoryCommand;
 import org.example.domain.events.TransactionAdded;
 import org.example.domain.value.AccountId;
 import org.example.domain.value.Name;
@@ -40,19 +42,12 @@ public class CommandHandle {
                 POST("/account/create").and(accept(MediaType.APPLICATION_JSON)),
 
                 request -> usecase.andThen(integrationHandle)
-                        .apply(request.bodyToMono(Map.class).map(map -> {
-                            return new CreateAccountCommand(
-                                    AccountId.of((String)map.get("id")),
-                                    UserId.of((String)map.get("userId")),
-                                    new Name((String)map.get("name"))
-                            );
-                        }))
+                        .apply(request.bodyToMono(CreateAccountCommand.class))
                         .then(ServerResponse.ok().build())
                         .onErrorResume(errorHandler::badRequest)
 
         );
     }
-
 
     @Bean
     public RouterFunction<ServerResponse> addtransaction(AddTransactionUseCase usecase) {
@@ -61,12 +56,19 @@ public class CommandHandle {
                 POST("/account/addtransaction").and(accept(MediaType.APPLICATION_JSON)),
 
                 request -> usecase.andThen(integrationHandle)
-                        .apply(request.bodyToMono(Map.class).map(map -> {
-                            return new AddTransactionUseCommand(
-                                    AccountId.of((String)map.get("id")),
-                                    new Date()
-                            );
-                        }))
+                        .apply(request.bodyToMono(AddTransactionUseCommand.class))
+                        .then(ServerResponse.ok().build())
+                        .onErrorResume(errorHandler::badRequest)
+
+        );
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> createDirectory(CreateDirectoryUseCase useCase) {
+        return route(
+                POST("/directory/create").and(accept(MediaType.APPLICATION_JSON)),
+                request -> useCase.andThen(integrationHandle)
+                        .apply(request.bodyToMono(CreateDirectoryCommand.class))
                         .then(ServerResponse.ok().build())
                         .onErrorResume(errorHandler::badRequest)
 
